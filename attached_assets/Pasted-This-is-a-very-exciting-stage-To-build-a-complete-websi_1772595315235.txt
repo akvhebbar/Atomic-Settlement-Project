@@ -1,0 +1,104 @@
+This is a very exciting stage! To build a complete website that looks professional, futuristic, and effectively demonstrates your complex blockchain protocol, you need a prompt that is extremely prescriptive about the design, the user flow, and the technical connections.
+
+Since this is for an academic presentation, the UI needs to tell the story of the "problem" (the delay) and the "solution" (instant refund) visually.
+
+Here is a comprehensive, detailed prompt designed to be fed into an AI coding assistant (like ChatGPT Professional, Claude Opus, or GitHub Copilot Chat) to generate the project structure and code components.
+
+---
+
+### The Mega-Prompt for Building the "Atomic-Verify" Website
+
+**Role:**
+You are an expert Senior Full-Stack Web3 Developer with a specialization in high-end Fintech UI/UX design. You are tasked with building the complete frontend and the simulation backend for the Phase 1 academic project: **"Atomic-Verify: A Blockchain-Based Real-Time Dispute Resolution Protocol."**
+
+**Project Objective:**
+Create a beautiful, functional Proof of Concept (PoC) dashboard that visually demonstrates a user making a crypto payment to a merchant (e.g., for a YouTube subscription). The key goal is to show two scenarios:
+
+1. **Happy Path:** Payment succeeds, merchant confirms, funds released.
+2. **Atomic Refund Path:** Payment is made, merchant fails to respond (simulation), funds are instantly refunded via smart contract.
+
+**Tech Stack Requirements:**
+
+* **Frontend Framework:** React.js (using Vite for speed).
+* **Styling & UI:** Tailwind CSS (for utility classes) combined with Framer Motion (for smooth, futuristic animations) and integrate a component library like shadcn/ui or Chakra UI for pre-built, accessible components (modals, toasts, buttons).
+* **Web3 Integration:** rainbowkit + wagmi and ethers.js (for elegant wallet connection and smart contract interaction on a testnet like Sepolia).
+* **State Management:** Zustand or React Context API for managing the transaction lifecycle state across components.
+* **Backend Simulation:** A simple Node.js/Express server with a single endpoint that waits for a trigger from the frontend to either return `200 OK` or timeout/error.
+
+---
+
+### **UI/UX Design & Aesthetic Guidelines**
+
+**Theme:** Futuristic Fintech, "Trustless," Transparent, Speed.
+**Color Palette:**
+
+* **Background:** Deep dark mode (midnight blues, near-blacks) to make glowing elements pop.
+* **Primary Accent:** Neon Cyan/Electric Blue (representing the blockchain/smart contract).
+* **Success State:** Glowing Emerald Green.
+* **Error/Refund State:** Glowing Crimson/Red-Orange.
+* **Typography:** Modern, clean sans-serif fonts (e.g., Inter or Satoshi). Headings should be bold and prominent.
+
+**UX Principles:**
+
+1. **Visual Feedback is King:** Every action (clicking pay, waiting for blockchain confirmation, oracle check) must have a distinct visual loader, animation, or state change. The user must never wonder "Is it working?".
+2. **The "Live Status" Track:** The centerpiece of the UI must be a real-time visual tracker showing the movement of funds: *Wallet -> Smart Contract Escrow -> [Oracle Wait] -> Merchant OR Refund.*
+3. **Simulation Controls:** Since this is a demo, clearly separate the "User Actions" area from the "Merchant Simulation Controls" area so presenters can easily trigger failure scenarios.
+
+---
+
+### **Detailed Functional & Component Requirements**
+
+Build a single-page application structured as follows:
+
+**1. The Navbar Component:**
+
+* **Left:** Project Logo (a stylized shield/lock icon with "Atomic-Verify").
+* **Right:** A prominent RainbowKit "Connect Wallet" button. It must show the user's address and balance once connected.
+
+**2. The Hero Section (Top Banner):**
+
+* A concise title: "Experience Real-Time Atomic Settlement."
+* A subtitle explaining the problem solved: "Eliminating the 14-day reconciliation lag. Funds are committed only upon Proof of Service. Instant, programmatic refunds."
+
+**3. The Main Dashboard (The Core Interface):**
+
+* Split the screen into a **Three-Column Layout** on desktop (stack on mobile).
+**Column A: User Payment Portal (Left)**
+* A card titled "Initiate Subscription Payment."
+* Input field showing the amount (e.g., "0.01 ETH" fixed for demo).
+* A large, gradient "PAY NOW & LOCK FUNDS" button.
+* *UX Note:* This button must be disabled if wallet is not connected. When clicked, it triggers the smart contract `depositFunds` function and changes the UI state to "Processing..." with a spinner.
+
+
+**Column B: The "Live Transaction Pipeline" (Center - Crucial Visual)**
+* This is a vertical or horizontal stepper component visualizing the flow.
+* **Stage 1: Payment Initiated.** (Glows when user clicks pay).
+* **Stage 2: Funds Locked in Escrow.** (Glows when blockchain confirms deposit. Show a lock icon animation).
+* **Stage 3: Oracle Verification Pending.** (Glows while waiting for backend response. Show a pulsing radar/search animation with a 60s countdown timer).
+* **Stage 4 (Branching):**
+* If Success: **"Service Confirmed. Funds Released."** (Green glow, handshake icon).
+* If Failure: **"Timeout/Error Detected. Instant Refund Executed."** (Red glow, reverse arrow icon).
+
+
+
+
+**Column C: Merchant Simulation Controls (Right - For Demo Purposes)**
+* A card titled "Simulation Controller (Backend Dev Mode)."
+* *Instructions:* "Once funds are locked, choose merchant behavior."
+* Button 1 (Green): "Simulate Success (Send 200 OK Receipt)." Clicking this tells the Node.js backend to respond positively to the Oracle.
+* Button 2 (Red): "Simulate Failure (Force Timeout/Error)." Clicking this tells the Node.js backend to ignore the request or send a 500 error, triggering the smart contract refund timeout.
+
+
+
+**4. Notification System (Toasts):**
+
+* Implement stackable toast notifications (using React Hot Toast or similar) at the bottom right corner for every major event: "Wallet Connected," "Transaction Sent to Chain," "Funds Locked Successfully," "Oracle Querying Merchant," and the final "Success" or "Refund Completed" message with transaction hash links to Etherscan (Sepolia).
+
+**5. Footer:**
+
+* Simple text: "Phase 1 Academic Project | Built with React, Solidity, & Chainlink."
+
+---
+
+**Execution Instructions for the AI:**
+Please generate the project structure, the necessary configuration files (Tailwind config, Vite config), the main `App.jsx` layout, and the code for these individual components, focusing heavily on the Tailwind CSS styling and Framer Motion animations to achieve the "beautiful, futuristic" aesthetic described. Ensure the state management logic connects the "Pay" button to the "Live Pipeline" visualizer.
