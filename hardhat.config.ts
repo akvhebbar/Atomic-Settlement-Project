@@ -1,6 +1,8 @@
-// load ethers and viem toolboxes so that `hre.ethers` and related helpers are available
+// load ethers toolbox so that `hre.ethers` and related helpers are available
 import "@nomicfoundation/hardhat-ethers";
-import "@nomicfoundation/hardhat-toolbox-viem";
+// 'hardhat-toolbox-viem' is not required for this project and introduces
+// dependency conflicts; omit it to simplify the environment.
+// import "@nomicfoundation/hardhat-toolbox-viem";
 import { configVariable, defineConfig } from "hardhat/config";
 
 export default defineConfig({
