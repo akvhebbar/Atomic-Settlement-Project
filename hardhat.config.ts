@@ -1,9 +1,15 @@
 // load ethers toolbox so that `hre.ethers` and related helpers are available
+console.log("hardhat.config.ts loaded");
 import "@nomicfoundation/hardhat-ethers";
-// 'hardhat-toolbox-viem' is not required for this project and introduces
-// dependency conflicts; omit it to simplify the environment.
-// import "@nomicfoundation/hardhat-toolbox-viem";
+// import "@nomicfoundation/hardhat-toolbox-viem"; // omitted to avoid gas-reporter dependency
 import { configVariable, defineConfig } from "hardhat/config";
+
+import { task } from "hardhat/config";
+
+// debug task to print the ethers object
+task("check-ethers", "Print hre.ethers").setAction(async (_, hre) => {
+  console.log("hre.ethers =", hre.ethers);
+});
 
 export default defineConfig({
   solidity: {
