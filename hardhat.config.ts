@@ -1,47 +1,28 @@
-// load ethers toolbox so that `hre.ethers` and related helpers are available
-console.log("hardhat.config.ts loaded");
 import "@nomicfoundation/hardhat-ethers";
-// import "@nomicfoundation/hardhat-toolbox-viem"; // omitted to avoid gas-reporter dependency
-import { configVariable, defineConfig } from "hardhat/config";
-
-import { task } from "hardhat/config";
-
-// debug task to print the ethers object
-task("check-ethers", "Print hre.ethers").setAction(async (_, hre) => {
-  console.log("hre.ethers =", hre.ethers);
-});
+import { defineConfig } from "hardhat/config";
 
 export default defineConfig({
   solidity: {
-    profiles: {
-      default: {
-        version: "0.8.28",
-      },
-      production: {
-        version: "0.8.28",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
-        },
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
       },
     },
   },
+  paths: {
+    sources: "./contracts",
+    artifacts: "./artifacts",
+  },
   networks: {
-    hardhatMainnet: {
-      type: "edr-simulated",
-      chainType: "l1",
+    ganache: {
+      type: "http" as any,
+      url: "http://127.0.0.1:7546",
     },
-    hardhatOp: {
-      type: "edr-simulated",
-      chainType: "op",
-    },
-    sepolia: {
-      type: "http",
-      chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+    localhost: {
+      type: "http" as any,
+      url: "http://127.0.0.1:8545",
     },
   },
 });

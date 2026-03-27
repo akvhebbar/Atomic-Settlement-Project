@@ -1,43 +1,78 @@
-import hre from "hardhat";
+import { ethers } from "ethers";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// This script must live in the `scripts/` folder so that Hardhat's
-// ts-node registration processes it and loads the plugins (including
-// hardhat-ethers/viem). Running `npx hardhat run scripts/deploy.ts`
-// will therefore provide a working `hre.ethers` object.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function main() {
-  console.log("Starting deployment...");
-  console.log("hre keys:", Object.keys(hre));
-  console.log("hre.network:", hre.network);
-  console.log("hre.network.ethers:", hre.network.ethers);
+  console.log("🚀 Starting AtomicEscrow deployment on Ganache...");
 
-  const connection = await hre.network.connect();
-  console.log("connection keys:", Object.keys(connection));
-  console.log("connection.provider:", connection.provider ? true : false);
-  console.log("connection.ethers:", connection.ethers);
+  try {
+    // Connect to Ganache
+    const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7546");
+    const accounts = await provider.listAccounts();
 
-  const ethers = connection.ethers || require("ethers");
-  console.log("using ethers:", ethers ? true : false);
-
-  // compile is run automatically prior to execution but we can
-  // optionally print the solidity version
-  if (ethers && connection.provider) {
-    const provider = ethers.providers
-      ? new ethers.providers.Web3Provider(connection.provider)
-      : null;
-    if (provider) {
-      console.log("network id:", (await provider.getNetwork()).chainId);
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No accounts available on Ganache");
     }
-  }
 
-  const AtomicEscrow = await ethers.getContractFactory("AtomicEscrow");
-  const escrow = await AtomicEscrow.deploy();
-  await escrow.waitForDeployment();
-  const address = await escrow.getAddress();
-  console.log("AtomicEscrow deployed to:", address);
+    const deployerAccount = accounts[0];
+    console.log("📤 Deploying from account:", deployerAccount);
+
+    // Check balance
+    const balance = await provider.getBalance(deployerAccount);
+    console.log("💰 Account balance:", ethers.formatEther(balance), "ETH");
+
+    // Read compiled artifact
+    const artifactPath = path.join(
+      __dirname,
+      "..",
+      "artifacts",
+      "contracts",
+      "AtomicEscrow.sol",
+      "AtomicEscrow.json",
+    );
+
+    if (!fs.existsSync(artifactPath)) {
+      throw new Error(`Artifact not found at ${artifactPath}`);
+    }
+
+    const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+
+    // Get signer using sendUnsignedTransaction or create a signer from a known private key
+    // For Ganache deterministic accounts, use the first account directly
+    const signer = await provider.getSigner();
+
+    // Deploy contract
+    console.log("⚙️  Deploying AtomicEscrow contract...");
+    const factory = new ethers.ContractFactory(
+      artifact.abi,
+      artifact.bytecode,
+      signer,
+    );
+
+    const escrow = await factory.deploy();
+    await escrow.waitForDeployment();
+
+    const contractAddress = await escrow.getAddress();
+    console.log("✅ AtomicEscrow deployed to:", contractAddress);
+
+    // Get network info
+    const network = await provider.getNetwork();
+    console.log("📋 Network:", network.name, "| Chain ID:", network.chainId);
+
+    // Save deployment info
+    console.log("\n📝 Update your contract configuration:");
+    console.log('export const CONTRACT_ADDRESS = "' + contractAddress + '";');
+    console.log('export const MERCHANT_ADDRESS = "' + deployerAccount + '";');
+
+    return contractAddress;
+  } catch (error) {
+    console.error("❌ Deployment failed:", error);
+    process.exitCode = 1;
+  }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main();
