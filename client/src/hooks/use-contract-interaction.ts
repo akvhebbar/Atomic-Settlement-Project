@@ -48,8 +48,8 @@ export const useContractInteraction = () => {
         signer,
       );
 
-      // Encode transaction ID
-      const txIdEncoded = ethers.encodeBytes32String(transactionId);
+      // Encode transaction ID (already a bytes32 hash from frontend)
+      const txIdEncoded = transactionId;
 
       console.log("Depositing funds:", {
         merchant: MERCHANT_ADDRESS,
@@ -119,7 +119,7 @@ export const useContractInteraction = () => {
         signer,
       );
 
-      const txIdEncoded = ethers.encodeBytes32String(transactionId);
+      const txIdEncoded = transactionId;
 
       console.log("Finalizing transaction:", txIdEncoded);
 
@@ -177,7 +177,7 @@ export const useContractInteraction = () => {
         signer,
       );
 
-      const txIdEncoded = ethers.encodeBytes32String(transactionId);
+      const txIdEncoded = transactionId;
 
       console.log("Refunding transaction:", txIdEncoded);
 

@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 export const GANACHE_NETWORK = {
   name: "Ganache",
   chainId: 1337,
-  rpcUrl: "http://127.0.0.1:7546",
+  rpcUrl: "http://127.0.0.1:7545",
 } as const;
 
 // Get provider for Ganache
@@ -56,7 +56,7 @@ export const switchToGanacheNetwork = async () => {
             {
               chainId: "0x539",
               chainName: "Ganache",
-              rpcUrls: ["http://127.0.0.1:7546"],
+              rpcUrls: ["http://127.0.0.1:7545"],
               nativeCurrency: {
                 name: "Ether",
                 symbol: "ETH",

@@ -31,7 +31,7 @@ export const useWalletBalance = (walletAddress: string | null) => {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      const rpcUrl = "http://127.0.0.1:7546";
+      const rpcUrl = "http://127.0.0.1:7545";
       console.log("[Balance] RPC URL:", rpcUrl);
       console.log("[Balance] Wallet address received:", walletAddress);
 

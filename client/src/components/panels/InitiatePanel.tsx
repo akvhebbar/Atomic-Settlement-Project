@@ -58,8 +58,10 @@ export function InitiatePanel() {
     }
 
     try {
-      // Generate transaction ID
-      const txId = `payment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Generate transaction ID - use keccak256 hash for bytes32 compatibility
+      const txId = ethers.keccak256(
+        ethers.toUtf8Bytes(`payment-${Date.now()}-${Math.random()}`),
+      );
 
       // Step 1: Initiating - Send funds to escrow
       setTxStep("initiating", txId);
@@ -88,45 +90,21 @@ export function InitiatePanel() {
           toast.success(
             "Settlement verified and executed! Funds released to merchant.",
           );
-        } else {
-          // Verification failed - process refund
-          toast.error(
-            `Verification failed: ${result.message}. Processing refund...`,
-          );
-          try {
-            await refundUser(txId);
-            setTxStep("refunded", txId);
-            // Refresh balance to show refunded amount
-            await new Promise((r) => setTimeout(r, 1000));
-            refetchBalance();
-            toast.success(
-              "✅ Refund processed! Funds returned to your wallet.",
-            );
-          } catch (refundError: any) {
-            console.error("Refund error:", refundError);
-            toast.error(
-              `Refund failed: ${refundError.message || "Unknown error"}. Please contact support.`,
-            );
-            setTxStep("error", txId);
-          }
-        }
-      } catch (error: any) {
-        // Network or API error - process refund
-        toast.error(`Verification failed. Processing refund...`);
-        try {
-          await refundUser(txId);
+        } else if (result.status === "error") {
+          // Server has already processed the refund automatically
           setTxStep("refunded", txId);
           // Refresh balance to show refunded amount
           await new Promise((r) => setTimeout(r, 1000));
           refetchBalance();
-          toast.success("✅ Refund processed! Funds returned to your wallet.");
-        } catch (refundError: any) {
-          console.error("Refund error:", refundError);
           toast.error(
-            `Refund failed: ${refundError.message || "Unknown error"}. Please contact support.`,
+            `Verification failed: ${result.message}. Funds have been automatically refunded to your wallet.`,
           );
-          setTxStep("error", txId);
         }
+      } catch (error: any) {
+        // Network or API error - this shouldn't happen with our new server logic
+        console.error("Unexpected verification error:", error);
+        toast.error(`Unexpected error: ${error.message || "Unknown error"}`);
+        setTxStep("error", txId);
       }
     } catch (error: any) {
       setTxStep("error");

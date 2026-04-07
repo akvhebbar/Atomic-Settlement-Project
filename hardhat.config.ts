@@ -18,7 +18,7 @@ export default defineConfig({
   networks: {
     ganache: {
       type: "http" as any,
-      url: "http://127.0.0.1:7546",
+      url: "http://127.0.0.1:7545",
     },
     localhost: {
       type: "http" as any,

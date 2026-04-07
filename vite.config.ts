@@ -50,6 +50,8 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    port: 4173,
+    host: "127.0.0.1",
     fs: {
       strict: true,
       deny: ["**/.*"],
@@ -58,7 +60,7 @@ export default defineConfig({
       overlay: false,
       protocol: "ws",
       host: "127.0.0.1",
-      port: 5173,
+      port: 4174,
       timeout: 60000,
     },
     watch: {

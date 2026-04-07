@@ -112,11 +112,14 @@ contract AtomicEscrow {
         // We allow the refund if:
         // 1. The Owner (Backend) calls it explicitly (Simulate Failure button)
         // OR
-        // 2. 60 seconds have passed and the transaction is still stuck (Automatic safety)
+        // 2. The original user calls it (for failed verifications)
+        // OR
+        // 3. 60 seconds have passed and the transaction is still stuck (Automatic safety)
         bool isOwner = msg.sender == owner;
+        bool isUser = msg.sender == txn.user;
         bool isExpired = block.timestamp > txn.timestamp + 60; // 60 seconds timeout
 
-        require(isOwner || isExpired, "Wait for timeout (60s) or Oracle trigger");
+        require(isOwner || isUser || isExpired, "Only user, owner, or after timeout can refund");
 
         // Update state
         txn.status = PaymentStatus.REFUNDED;
@@ -126,6 +129,6 @@ contract AtomicEscrow {
         (bool success, ) = txn.user.call{value: txn.amount}("");
         require(success, "Refund transfer failed");
 
-        emit RefundExecuted(_transactionId, txn.user, txn.amount, isExpired ? "Timeout Expired" : "Oracle Triggered");
+        emit RefundExecuted(_transactionId, txn.user, txn.amount, isExpired ? "Timeout Expired" : (isOwner ? "Oracle Triggered" : "User Requested"));
     }
 }
