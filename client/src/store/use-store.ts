@@ -6,8 +6,7 @@ export type TxStep =
   | "locked"
   | "verifying"
   | "success"
-  | "error"
-  | "refunded";
+  | "error";
 
 interface AppState {
   isWalletConnected: boolean;

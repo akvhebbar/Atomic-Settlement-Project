@@ -92,7 +92,7 @@ export function InitiatePanel() {
           );
         } else if (result.status === "error") {
           // Server has already processed the refund automatically
-          setTxStep("refunded", txId);
+          setTxStep("error", txId);
           // Refresh balance to show refunded amount
           await new Promise((r) => setTimeout(r, 1000));
           refetchBalance();

@@ -11,14 +11,14 @@ async function main() {
 
   try {
     // Connect to Ganache
-    const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7546");
-    const accounts = await provider.listAccounts();
+    const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7545");
 
-    if (!accounts || accounts.length === 0) {
-      throw new Error("No accounts available on Ganache");
-    }
+    // Use the first Ganache deterministic account private key
+    const deployerPrivateKey =
+      "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d";
+    const signer = new ethers.Wallet(deployerPrivateKey, provider);
 
-    const deployerAccount = accounts[0];
+    const deployerAccount = signer.address;
     console.log("📤 Deploying from account:", deployerAccount);
 
     // Check balance
@@ -40,10 +40,6 @@ async function main() {
     }
 
     const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
-
-    // Get signer using sendUnsignedTransaction or create a signer from a known private key
-    // For Ganache deterministic accounts, use the first account directly
-    const signer = await provider.getSigner();
 
     // Deploy contract
     console.log("⚙️  Deploying AtomicEscrow contract...");

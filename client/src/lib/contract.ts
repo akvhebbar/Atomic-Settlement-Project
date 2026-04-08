@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 // Contract address deployed on Ganache
 // Successfully deployed to this address
-export const CONTRACT_ADDRESS = "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab";
+export const CONTRACT_ADDRESS = "0x7D28F8dd50E15543232829eD24aEeD98D2834a67";
 
 // Merchant address (Ganache account #0 - deployer)
 // Your main Ganache account
@@ -68,12 +68,12 @@ export const ATOMIC_ESCROW_ABI = [
     name: "transactions",
     outputs: [
       {
-        internalType: "address",
+        internalType: "address payable",
         name: "user",
         type: "address",
       },
       {
-        internalType: "address",
+        internalType: "address payable",
         name: "merchant",
         type: "address",
       },
@@ -83,19 +83,19 @@ export const ATOMIC_ESCROW_ABI = [
         type: "uint256",
       },
       {
-        internalType: "enum AtomicEscrow.TransactionStatus",
+        internalType: "uint256",
+        name: "timestamp",
+        type: "uint256",
+      },
+      {
+        internalType: "enum AtomicEscrow.PaymentStatus",
         name: "status",
         type: "uint8",
       },
       {
-        internalType: "uint256",
-        name: "createdAt",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "expiresAt",
-        type: "uint256",
+        internalType: "bool",
+        name: "isLocked",
+        type: "bool",
       },
     ],
     stateMutability: "view",

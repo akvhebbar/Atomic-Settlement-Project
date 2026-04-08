@@ -1,0 +1,3 @@
+{
+  "typescript.problems.excludePatterns": ["baseUrl"]
+}

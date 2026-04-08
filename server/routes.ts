@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ethers } from "ethers";
 
 // Contract details
-const CONTRACT_ADDRESS = "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab";
+const CONTRACT_ADDRESS = "0x7D28F8dd50E15543232829eD24aEeD98D2834a67";
 const ATOMIC_ESCROW_ABI = [
   {
     inputs: [
@@ -100,6 +100,11 @@ const ATOMIC_ESCROW_ABI = [
         name: "status",
         type: "uint8",
       },
+      {
+        internalType: "bool",
+        name: "isLocked",
+        type: "bool",
+      },
     ],
     stateMutability: "view",
     type: "function",
@@ -187,6 +192,30 @@ const ATOMIC_ESCROW_ABI = [
   },
 ];
 
+async function getOwnerSigner(provider: ethers.JsonRpcProvider) {
+  // Get list of available accounts from Ganache
+  const accounts = (await provider.send("eth_accounts", [])) as string[];
+  console.log("🔍 Available Ganache accounts:", accounts);
+
+  // Try to find the owner account that deployed the contract
+  const ownerAddress = "0x1d6976D4Ff9480D09f69Bf5236192CaEd55fbF08";
+  console.log("🔍 Using owner address:", ownerAddress);
+
+  // Use Ganache's built-in transaction sending by finding the account index
+  const accountIndex = accounts.findIndex(
+    (acc) => acc.toLowerCase() === ownerAddress.toLowerCase(),
+  );
+
+  if (accountIndex === -1) {
+    console.warn(
+      "⚠️ Owner account not found in Ganache accounts, using index 0",
+    );
+    return provider.getSigner(0);
+  }
+
+  return provider.getSigner(accountIndex);
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express,
@@ -228,12 +257,9 @@ export async function registerRoutes(
           return res.status(400).json({ message: "Transaction ID required" });
         }
 
-        // Connect to Ganache and finalize the transaction
+        // Connect to Ganache and use the contract owner signer for finalization
         const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7545");
-        const signer = new ethers.Wallet(
-          "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d", // Ganache default private key
-          provider,
-        );
+        const signer = await getOwnerSigner(provider);
 
         const contract = new ethers.Contract(
           CONTRACT_ADDRESS,
@@ -269,12 +295,9 @@ export async function registerRoutes(
           return res.status(400).json({ message: "Transaction ID required" });
         }
 
-        // Connect to Ganache and refund the transaction
+        // Connect to Ganache and use the contract owner signer for refunding
         const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7545");
-        const signer = new ethers.Wallet(
-          "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d", // Ganache default private key
-          provider,
-        );
+        const signer = await getOwnerSigner(provider);
 
         const contract = new ethers.Contract(
           CONTRACT_ADDRESS,
@@ -339,20 +362,16 @@ export async function registerRoutes(
           });
         }
 
-        return res
-          .status(200)
-          .json({
-            status: "error",
-            message: "Verification failed. Funds refunded automatically.",
-          });
+        return res.status(200).json({
+          status: "error",
+          message: "Verification failed. Funds refunded automatically.",
+        });
       } else if (currentStatus === "timeout") {
         // Simulate a timeout that takes a long time and then fails
         await new Promise((resolve) => setTimeout(resolve, 3000));
-        return res
-          .status(500)
-          .json({
-            message: "Timeout/Error Detected. Instant Refund Executed.",
-          });
+        return res.status(500).json({
+          message: "Timeout/Error Detected. Instant Refund Executed.",
+        });
       }
 
       res.json({ status: "success", message: "Service Confirmed." });
