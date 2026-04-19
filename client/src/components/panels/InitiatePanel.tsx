@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useStore } from "@/store/use-store";
 import { useMetaMask } from "@/hooks/use-metamask";
 import { useWalletBalance } from "@/hooks/use-wallet-balance";
@@ -24,7 +25,8 @@ export function InitiatePanel() {
     loading: balanceLoading,
     refetch: refetchBalance,
   } = useWalletBalance(walletAddress);
-  const { gasCostFormatted, loading: gasLoading } = useGasEstimate();
+  const [amountInput, setAmountInput] = useState<string>("0.05");
+  const { gasCostFormatted, loading: gasLoading } = useGasEstimate(amountInput);
   const {
     depositFunds,
     refundUser,
@@ -34,7 +36,7 @@ export function InitiatePanel() {
   const { txStep, setTxStep } = useStore();
   const verifyMutation = useVerifyTransaction();
 
-  const paymentAmountFormatted = ethers.formatEther(PAYMENT_AMOUNT);
+  const paymentAmountFormatted = amountInput || "0";
   const totalCost = (
     parseFloat(paymentAmountFormatted) + parseFloat(gasCostFormatted)
   ).toFixed(6);
@@ -67,7 +69,23 @@ export function InitiatePanel() {
       setTxStep("initiating", txId);
       toast.info("Broadcasting transaction to Ganache...");
 
-      await depositFunds(txId);
+      await depositFunds(txId, amountInput);
+      
+      // Save initial transaction to our database via backend
+      try {
+        await fetch("/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transactionId: txId,
+            walletAddress: walletAddress,
+            amount: amountInput,
+            gasFee: gasCostFormatted
+          })
+        });
+      } catch (err) {
+        console.error("Failed to save transaction initially", err);
+      }
 
       // Step 2: Locked - Funds are now locked
       setTxStep("locked", txId);
@@ -207,10 +225,16 @@ export function InitiatePanel() {
               Amount to Lock
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-4xl font-mono font-bold text-white">
-                {paymentAmountFormatted}
-              </span>
-              <span className="text-primary font-bold mb-1">ETH</span>
+              <input 
+                type="number" 
+                value={amountInput} 
+                onChange={(e) => setAmountInput(e.target.value)}
+                step="0.01"
+                min="0"
+                className="bg-transparent text-4xl font-mono font-bold text-white border-b border-primary/30 focus:border-primary focus:bg-primary/5 px-2 outline-none w-full max-w-[200px] transition-colors rounded-t-xl" 
+                disabled={isBusy || txLoading}
+              />
+              <span className="text-primary font-bold mb-1 text-xl">ETH</span>
             </div>
             <div className="text-xs text-muted-foreground mt-2 font-mono">
               Gas Fee: {gasLoading ? "..." : gasCostFormatted} ETH

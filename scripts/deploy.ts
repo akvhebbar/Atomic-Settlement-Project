@@ -13,12 +13,10 @@ async function main() {
     // Connect to Ganache
     const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7545");
 
-    // Use the first Ganache deterministic account private key
-    const deployerPrivateKey =
-      "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d";
-    const signer = new ethers.Wallet(deployerPrivateKey, provider);
+    // Use Ganache Account 9 as the deployer/owner
+    const signer = await provider.getSigner(9);
 
-    const deployerAccount = signer.address;
+    const deployerAccount = await signer.getAddress();
     console.log("📤 Deploying from account:", deployerAccount);
 
     // Check balance

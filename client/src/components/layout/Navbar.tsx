@@ -1,11 +1,14 @@
-import { Activity, Wallet } from "lucide-react";
+import { Activity, Wallet, History } from "lucide-react";
 import { useStore } from "@/store/use-store";
 import { useMetaMask } from "@/hooks/use-metamask";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { TransactionModal } from "@/components/TransactionModal";
 
 export function Navbar() {
   const { isWalletConnected, walletAddress } = useStore();
   const { connect, disconnect, isConnecting, error } = useMetaMask();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const formatAddress = (address: string) => {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
@@ -43,6 +46,14 @@ export function Navbar() {
 
           {/* Wallet Connection */}
           <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2 md:gap-3">
+              <button 
+                 onClick={() => setIsModalOpen(true)}
+                 className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-background/50 border border-primary/30 text-white hover:bg-primary/20 transition-colors text-sm font-bold"
+              >
+                <History className="w-4 h-4" />
+                <span className="hidden sm:inline">Transaction Details</span>
+              </button>
             {isWalletConnected ? (
               <div className="flex gap-2">
                 <motion.div
@@ -90,9 +101,11 @@ export function Navbar() {
                 {error}
               </p>
             )}
+            </div>
           </div>
         </div>
       </div>
+      <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </nav>
   );
 }

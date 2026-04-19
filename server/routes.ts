@@ -4,9 +4,12 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { ethers } from "ethers";
+import { db } from "./db";
+import { transactions } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 // Contract details
-const CONTRACT_ADDRESS = "0x7D28F8dd50E15543232829eD24aEeD98D2834a67";
+const CONTRACT_ADDRESS = "0x3303dbb9158a9d00CD92f38a9123F8798A65881D";
 const ATOMIC_ESCROW_ABI = [
   {
     inputs: [
@@ -197,23 +200,15 @@ async function getOwnerSigner(provider: ethers.JsonRpcProvider) {
   const accounts = (await provider.send("eth_accounts", [])) as string[];
   console.log("🔍 Available Ganache accounts:", accounts);
 
-  // Try to find the owner account that deployed the contract
-  const ownerAddress = "0x1d6976D4Ff9480D09f69Bf5236192CaEd55fbF08";
-  console.log("🔍 Using owner address:", ownerAddress);
-
-  // Use Ganache's built-in transaction sending by finding the account index
-  const accountIndex = accounts.findIndex(
-    (acc) => acc.toLowerCase() === ownerAddress.toLowerCase(),
-  );
-
-  if (accountIndex === -1) {
-    console.warn(
-      "⚠️ Owner account not found in Ganache accounts, using index 0",
-    );
-    return provider.getSigner(0);
+  // We use Account 9 as the Oracle/Owner to avoid cluttering the User's transaction history.
+  // This account will pay for gas for finalizeTransaction and refundUser calls.
+  if (accounts.length >= 10) {
+    console.log("🔍 Using Ganache account 9 as Oracle signer:", accounts[9]);
+    return provider.getSigner(9);
   }
 
-  return provider.getSigner(accountIndex);
+  console.warn("⚠️ Account 9 not found, falling back to index 0");
+  return provider.getSigner(0);
 }
 
 export async function registerRoutes(
@@ -233,6 +228,42 @@ export async function registerRoutes(
         });
       }
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Transaction History Endpoints
+  // GET /api/transactions
+  app.get("/api/transactions", async (req, res) => {
+    try {
+      const allTransactions = await db.select().from(transactions).orderBy(desc(transactions.createdAt));
+      res.json({ success: true, transactions: allTransactions });
+    } catch (err) {
+      console.error("❌ Failed to fetch transactions:", err);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
+
+  // POST /api/transactions (called immediately after creating via UI)
+  app.post("/api/transactions", async (req, res) => {
+    try {
+      const { transactionId, walletAddress, amount, gasFee } = req.body;
+      if (!transactionId || !walletAddress || !amount || !gasFee) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const newTx = await db.insert(transactions).values({
+        transactionId,
+        walletAddress,
+        amount,
+        gasFee,
+        status: "pending",
+        createdAt: new Date(),
+      }).returning();
+      
+      res.json({ success: true, transaction: newTx[0] });
+    } catch (err) {
+      console.error("❌ Failed to save transaction:", err);
+      res.status(500).json({ message: "Failed to save transaction record" });
     }
   });
 
@@ -274,6 +305,15 @@ export async function registerRoutes(
           const receipt = await tx.wait();
           console.log("✅ Transaction finalized successfully:", tx.hash);
           console.log("📋 Receipt:", receipt);
+          
+          try {
+            // Update db status to success
+            await db.update(transactions)
+              .set({ status: "success" })
+              .where(eq(transactions.transactionId, transactionId));
+          } catch (dbErr) {
+            console.error("❌ DB update failed:", dbErr);
+          }
         } catch (contractError) {
           console.error("❌ Contract finalization error:", contractError);
           return res
@@ -331,6 +371,15 @@ export async function registerRoutes(
           const receipt = await tx.wait();
           console.log("✅ Transaction refunded successfully:", tx.hash);
           console.log("📋 Receipt:", receipt);
+          
+          try {
+             // Update db status to error/refunded
+             await db.update(transactions)
+               .set({ status: "error" })
+               .where(eq(transactions.transactionId, transactionId));
+          } catch (dbErr) {
+             console.error("❌ DB update failed:", dbErr);
+          }
         } catch (contractError: any) {
           console.error("❌ Contract refund error:", contractError);
           console.error("❌ Error message:", contractError.message);
@@ -365,12 +414,6 @@ export async function registerRoutes(
         return res.status(200).json({
           status: "error",
           message: "Verification failed. Funds refunded automatically.",
-        });
-      } else if (currentStatus === "timeout") {
-        // Simulate a timeout that takes a long time and then fails
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        return res.status(500).json({
-          message: "Timeout/Error Detected. Instant Refund Executed.",
         });
       }
 

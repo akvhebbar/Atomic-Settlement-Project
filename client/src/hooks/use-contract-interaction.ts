@@ -4,7 +4,6 @@ import {
   CONTRACT_ADDRESS,
   ATOMIC_ESCROW_ABI,
   MERCHANT_ADDRESS,
-  PAYMENT_AMOUNT,
 } from "@/lib/contract";
 import { toast } from "sonner";
 
@@ -24,7 +23,7 @@ export const useContractInteraction = () => {
   });
 
   // Deposit funds into escrow
-  const depositFunds = useCallback(async (transactionId: string) => {
+  const depositFunds = useCallback(async (transactionId: string, amountInEther: string) => {
     try {
       setState({
         hash: null,
@@ -50,16 +49,17 @@ export const useContractInteraction = () => {
 
       // Encode transaction ID (already a bytes32 hash from frontend)
       const txIdEncoded = transactionId;
+      const parsedAmount = ethers.parseEther(amountInEther);
 
       console.log("Depositing funds:", {
         merchant: MERCHANT_ADDRESS,
         txId: txIdEncoded,
-        amount: PAYMENT_AMOUNT.toString(),
+        amount: amountInEther,
       });
 
       // Call depositFunds
       const tx = await contract.depositFunds(MERCHANT_ADDRESS, txIdEncoded, {
-        value: PAYMENT_AMOUNT,
+        value: parsedAmount,
       });
 
       console.log("Transaction sent:", tx.hash);
