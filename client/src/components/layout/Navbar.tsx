@@ -30,8 +30,9 @@ export function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 glass-panel border-b-0 border-t-0 border-x-0 !rounded-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <nav className="fixed top-0 w-full z-50 glass-panel border-b-0 border-t-0 border-x-0 !rounded-none">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center gap-3">
@@ -105,7 +106,8 @@ export function Navbar() {
           </div>
         </div>
       </div>
+      </nav>
       <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </nav>
+    </>
   );
 }

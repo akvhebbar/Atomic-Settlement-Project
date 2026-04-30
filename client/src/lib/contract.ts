@@ -2,11 +2,11 @@ import { ethers } from "ethers";
 
 // Contract address deployed on Ganache
 // Successfully deployed to this address
-export const CONTRACT_ADDRESS = "0x3303dbb9158a9d00CD92f38a9123F8798A65881D";
+export const CONTRACT_ADDRESS = "0x6BC073124F1f14fFB40F6a8080cf33b157305C94";
 
 // Merchant address (Ganache account #1)
 // Your secondary Ganache account for testing receipts
-export const MERCHANT_ADDRESS = "0x94dE8cd7351ec7275ee2A4A324c7E9B5Fa43290A";
+export const MERCHANT_ADDRESS = "0x5bc79e0AE4877127d3BB5bc543ebD0DA95C462B3";
 
 // Payment amount (0.05 ETH)
 export const PAYMENT_AMOUNT = ethers.parseEther("0.05");

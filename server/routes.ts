@@ -9,7 +9,7 @@ import { transactions } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 
 // Contract details
-const CONTRACT_ADDRESS = "0x3303dbb9158a9d00CD92f38a9123F8798A65881D";
+const CONTRACT_ADDRESS = "0x6BC073124F1f14fFB40F6a8080cf33b157305C94";
 const ATOMIC_ESCROW_ABI = [
   {
     inputs: [

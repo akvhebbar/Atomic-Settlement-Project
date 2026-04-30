@@ -94,8 +94,8 @@ export function TransactionModal({ isOpen, onClose }: { isOpen: boolean, onClose
                 <div className="w-full overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-muted-foreground">
-                        <th className="pb-4 px-4 font-semibold">Status</th>
+                      <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-muted-foreground sticky top-0 bg-black/60 backdrop-blur-md z-10 shadow-sm">
+                        <th className="py-4 px-4 font-semibold">Status</th>
                         <th className="pb-4 px-4 font-semibold">Transaction Hash</th>
                         <th className="pb-4 px-4 font-semibold">Wallet Address</th>
                         <th className="pb-4 px-4 font-semibold">Date & Time</th>
